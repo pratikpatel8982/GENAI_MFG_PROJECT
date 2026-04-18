@@ -1,10 +1,18 @@
--- Run this in your Supabase SQL Editor to set up the project
+-- ================================
+-- 🔥 FULL RESET
+-- ================================
+DROP VIEW IF EXISTS recent_concepts;
+DROP TABLE IF EXISTS manufacturing_concepts;
 
--- Enable UUID extension
+-- ================================
+-- EXTENSIONS
+-- ================================
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Main table for manufacturing concepts
-CREATE TABLE IF NOT EXISTS manufacturing_concepts (
+-- ================================
+-- MAIN TABLE
+-- ================================
+CREATE TABLE manufacturing_concepts (
     id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     uid         TEXT NOT NULL,
     prompt      TEXT NOT NULL,
@@ -13,30 +21,59 @@ CREATE TABLE IF NOT EXISTS manufacturing_concepts (
     created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Index for faster user-specific queries
-CREATE INDEX IF NOT EXISTS idx_manufacturing_concepts_uid
-    ON manufacturing_concepts(uid);
+-- ================================
+-- INDEXES (IMPROVED)
+-- ================================
 
--- Index for text search
-CREATE INDEX IF NOT EXISTS idx_manufacturing_concepts_prompt
-    ON manufacturing_concepts USING gin(to_tsvector('english', prompt));
+-- Fast user queries + sorting
+CREATE INDEX idx_uid_created_at
+ON manufacturing_concepts(uid, created_at DESC);
 
--- Row Level Security
+-- Full-text search index (important)
+CREATE INDEX idx_prompt_fts
+ON manufacturing_concepts
+USING GIN (to_tsvector('english', prompt));
+
+-- ================================
+-- RLS (SAFE FOR YOUR BACKEND)
+-- ================================
 ALTER TABLE manufacturing_concepts ENABLE ROW LEVEL SECURITY;
 
--- Policy: users can only access their own data
-CREATE POLICY "Users can view own concepts"
-    ON manufacturing_concepts FOR SELECT
-    USING (uid = current_user);
+-- Allow backend full access (since you control uid in Flask)
+CREATE POLICY "Backend full access"
+ON manufacturing_concepts
+FOR ALL
+USING (true)
+WITH CHECK (true);
 
-CREATE POLICY "Users can insert own concepts"
-    ON manufacturing_concepts FOR INSERT
-    WITH CHECK (true);  -- backend controls uid
-
--- Optional: view for recent concepts
-CREATE OR REPLACE VIEW recent_concepts AS
-SELECT id, uid, prompt,
-       LEFT(description, 200) AS description_preview,
-       image_url, created_at
+-- ================================
+-- VIEW (IMPROVED)
+-- ================================
+CREATE VIEW recent_concepts AS
+SELECT
+    id,
+    uid,
+    prompt,
+    LEFT(description, 200) AS description_preview,
+    image_url,
+    created_at
 FROM manufacturing_concepts
-ORDER BY created_at DESC;
+ORDER BY created_at DESC
+LIMIT 50;
+
+-- ================================
+-- OPTIONAL: FULL-TEXT SEARCH FUNCTION
+-- ================================
+CREATE OR REPLACE FUNCTION search_concepts(query TEXT, user_id TEXT)
+RETURNS SETOF manufacturing_concepts
+LANGUAGE sql
+AS $$
+    SELECT *
+    FROM manufacturing_concepts
+    WHERE uid = user_id
+      AND to_tsvector('english', prompt) @@ plainto_tsquery(query)
+    ORDER BY ts_rank(
+        to_tsvector('english', prompt),
+        plainto_tsquery(query)
+    ) DESC;
+$$;
