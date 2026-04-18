@@ -14,13 +14,13 @@ multimodal-manufacturing-creator/
 │   ├── requirements.txt        ← Python dependencies
 │   ├── .env.example            ← Environment variable template
 │   └── supabase_schema.sql     ← DB schema to run in Supabase
-└── frontend/
+└── static/
     ├── index.html              ← Main HTML page
-    └── static/
-        ├── css/style.css       ← All styles
-        └── js/
-            ├── firebase-config.js  ← Firebase auth setup
-            └── app.js              ← Main app logic
+    ├── css/
+    │   └── style.css       ← All styles
+    └── js/
+        ├── firebase-config.js  ← Firebase auth setup
+        └── app.js              ← Main app logic
 ```
 
 ---
@@ -54,14 +54,12 @@ multimodal-manufacturing-creator/
 ### Step 2 — Backend Setup
 
 ```bash
-cd backend
-
 # Create virtual environment
 python -m venv venv
 source venv/bin/activate       # Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -r backend\requirements.txt
 
 # Configure environment
 cp .env.example .env
@@ -70,16 +68,13 @@ cp .env.example .env
 #   SUPABASE_URL=...
 #   SUPABASE_KEY=...
 
-# Run the server
-python app.py
-# → Running on http://localhost:5000
 ```
 
 ---
 
 ### Step 3 — Frontend Setup
 
-1. Open `frontend/static/js/firebase-config.js`
+1. Open `static/js/firebase-config.js`
 2. Replace ALL placeholder values with your Firebase config:
 ```js
 const firebaseConfig = {
@@ -91,9 +86,17 @@ const firebaseConfig = {
   appId:             "YOUR_APP_ID"
 };
 ```
-3. Open `frontend/index.html` directly in your browser
-   - Or serve it: `cd frontend && python -m http.server 8080`
-   - Then visit http://localhost:8080
+
+---
+
+### Step 4 — Run
+
+Run the application
+```bash
+python -m backend.app
+```
+
+ → Running on http://localhost:5000
 
 ---
 
@@ -119,6 +122,8 @@ const firebaseConfig = {
 | POST | `/api/generate/multimodal` | Generate both (text + image) |
 | GET  | `/api/history?uid=...` | Fetch user's concept history |
 | POST | `/api/search` | Search past concepts |
+| POST | `/api/delete` | Clear History |
+| POST | `/api/delete/<concept-id>` | Delete Single Entry |
 | GET  | `/api/health` | Health check |
 
 ---
