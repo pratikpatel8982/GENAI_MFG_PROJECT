@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multimodal Manufacturing Creator | GAI-32</title>
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <!-- Firebase compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <!-- Firebase config + auth helpers (must load before app.js) -->
+  <script src="/js/firebase-config.js"></script>
+</head>
+<body>
+
+<!-- ══ AUTH ══════════════════════════════════════════════════════════════════ -->
+<section id="auth-section">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="logo-icon">⚙️</span>
+      <h1>Manufacturing Creator</h1>
+      <p>Multimodal AI for Industrial Concept Visualization</p>
+      <div class="project-badge">GAI-32 · D7 · Group 09D7</div>
+    </div>
+
+    <button class="btn-google" id="btn-google">
+      <svg width="20" height="20" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Sign in with Google
+    </button>
+
+    <p class="auth-note">By signing in you agree to use this tool for educational and professional purposes.</p>
+  </div>
+</section>
+
+<!-- ══ APP ════════════════════════════════════════════════════════════════════ -->
+<div id="app-section" class="hidden">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-brand">⚙️&nbsp; Manufacturing <span>Creator</span></div>
+    <div class="topbar-user">
+      <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User" alt="Avatar" />
+      <div class="user-info">
+        <div id="user-name">User</div>
+        <div id="user-email">user@email.com</div>
+      </div>
+      <button class="btn-logout" id="btn-logout">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-search">
+      <input type="text" id="search-input" placeholder="Search concepts…" />
+      <button id="search-btn">🔍</button>
+    </div>
+    <div class="sidebar-title">Generation History</div>
+    <div id="history-list">
+      <p class="empty-state">Loading history…</p>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+
+    <div class="generator-card">
+      <h2>Generate Manufacturing Concept</h2>
+      <p class="subtitle">Describe a product or idea — get a detailed technical write-up and a high-fidelity prototype visualization.</p>
+
+      <div class="prompt-area">
+        <textarea id="prompt-input" placeholder="e.g. Automated robotic arm for precision welding in an automotive assembly line…" rows="3"></textarea>
+      </div>
+
+      <div class="example-chips" id="example-prompts"></div>
+
+      <div class="action-buttons">
+        <button class="btn-action" id="btn-text"       onclick="generate('text')">📝 Generate Description</button>
+        <button class="btn-action" id="btn-image"      onclick="generate('image')">🖼️ Generate Image</button>
+        <button class="btn-action" id="btn-multimodal" onclick="generate('multimodal')">✨ Generate Both</button>
+      </div>
+
+      <div id="generating-bar" class="generating-bar hidden" style="margin-top:18px">
+        <div class="spinner"></div>
+        <span id="generating-msg">Generating…</span>
+        <div class="progress-bar-track"><div class="progress-bar-fill"></div></div>
+      </div>
+    </div>
+
+    <div id="results-section" class="hidden">
+      <div id="text-result"  class="result-block hidden"></div>
+      <div id="image-result" class="result-block hidden"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Loading overlay -->
+<div id="loading-overlay" class="hidden">
+  <div class="loading-card">
+    <div class="loading-spinner-lg"></div>
+    <span id="loading-msg">Processing…</span>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
