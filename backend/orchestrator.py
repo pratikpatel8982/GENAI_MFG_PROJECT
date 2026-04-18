@@ -128,15 +128,25 @@ class ManufacturingOrchestrator:
         return result.data or []
 
     def search_concepts(self, uid: str, query: str) -> list[dict]:
-        result = (
-            self._db.table("manufacturing_concepts")
-            .select("*")
-            .eq("uid", uid)
-            .ilike("prompt", f"%{query}%")
-            .order("created_at", desc=True)
-            .execute()
-        )
+        result = self._db.rpc(
+            "search_concepts",
+            {"query": query, "user_id": uid}
+        ).execute()
         return result.data or []
+
+    def delete_all(self, uid: str) -> None:
+        self._db.table("manufacturing_concepts") \
+            .delete() \
+            .eq("uid", uid) \
+            .execute()
+
+
+    def delete_one(self, uid: str, concept_id: str) -> None:
+        self._db.table("manufacturing_concepts") \
+            .delete() \
+            .eq("uid", uid) \
+            .eq("id", concept_id) \
+            .execute()
 
     # ── Firebase token verification ──────────────────────────────────────────
 

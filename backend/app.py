@@ -128,8 +128,29 @@ def create_app() -> Flask:
         results = orchestrator.search_concepts(request.uid, query)
         return jsonify({"results": results})
 
-    return app
+    # ── Delete all ─────────────────────────────────────────────────────────────
 
+    @app.route("/api/delete", methods=["DELETE"])
+    @auth_required
+    def delete_all_history():
+        try:
+            orchestrator.delete_all(request.uid)
+            return jsonify({"status": "success", "message": "All history deleted"})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    # ── Delete one ─────────────────────────────────────────────────────────────
+
+    @app.route("/api/delete/<concept_id>", methods=["DELETE"])
+    @auth_required
+    def delete_one(concept_id):
+        try:
+            orchestrator.delete_one(request.uid, concept_id)
+            return jsonify({"status": "success", "message": "Deleted"})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    return app
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 

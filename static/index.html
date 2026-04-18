@@ -60,7 +60,10 @@
       <input type="text" id="search-input" placeholder="Search concepts…" />
       <button id="search-btn">🔍</button>
     </div>
-    <div class="sidebar-title">Generation History</div>
+    <div class="sidebar-title" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>Generation History</span>
+      <button id="btn-clear-history" class="btn-clear-history">Clear</button>
+    </div>
     <div id="history-list">
       <p class="empty-state">Loading history…</p>
     </div>

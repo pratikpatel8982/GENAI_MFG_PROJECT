@@ -105,22 +105,35 @@ async function loadHistory() {
 
 function renderHistory(items) {
   const container = document.getElementById("history-list");
+
+  // ✅ Empty state (correct placement)
   if (!items || items.length === 0) {
-    container.innerHTML = `<p class="empty-state">No concepts yet. Create your first one!</p>`;
+    container.innerHTML = `<p class="empty-state">No history yet</p>`;
     return;
   }
-  container.innerHTML = items.map(item => `
-    <div class="history-item" onclick="loadHistoryItem(${JSON.stringify(item).replace(/"/g, "&quot;")})">
+
+  // ✅ Use your new component (with delete button)
+  container.innerHTML = items.map(renderHistoryItem).join("");
+}
+function renderHistoryItem(item) {
+  return `
+    <div class="history-item"
+        onclick="loadHistoryItem(${JSON.stringify(item).replace(/"/g, "&quot;")})">
       <div class="history-item-header">
-        <span class="history-prompt">${escapeHtml(item.prompt.substring(0, 60))}${item.prompt.length > 60 ? "…" : ""}</span>
-        <span class="history-date">${formatDate(item.created_at)}</span>
+        <div>
+          <div class="history-prompt">${item.prompt}</div>
+          <div class="history-date">${new Date(item.created_at).toLocaleString()}</div>
+        </div>
+
+        <button class="btn-delete" onclick="deleteOne(event, '${item.id}')">🗑️</button>
       </div>
+
       <div class="history-tags">
-        ${item.description ? '<span class="tag tag-text">📝 Text</span>'  : ""}
-        ${item.image_url   ? '<span class="tag tag-image">🖼️ Image</span>' : ""}
+        ${item.description ? '<span class="tag tag-text">Text</span>' : ''}
+        ${item.image_url ? '<span class="tag tag-image">Image</span>' : ''}
       </div>
     </div>
-  `).join("");
+  `;
 }
 
 function loadHistoryItem(item) {
@@ -211,6 +224,61 @@ async function apiGet(endpoint) {
   if (!res.ok) throw new Error("Request failed");
   return res.json();
 }
+
+async function deleteOne(e, id) {
+  e.stopPropagation(); // prevent opening item
+
+  if (!confirm("Delete this item?")) return;
+  e.target.disabled = true;
+
+  try {
+    const token = await getIdToken();
+
+    const res = await fetch(`/api/delete/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    if (!res.ok) throw new Error("Failed");
+
+    showToast("Deleted", "success");
+    loadHistory();
+
+  } catch (err) {
+    showToast("Delete failed", "error");
+    e.target.disabled = false;
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("btn-clear-history");
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    if (!confirm("Delete ALL history? This cannot be undone.")) return;
+
+    try {
+      const token = await getIdToken();
+
+      const res = await fetch(`/api/delete`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      });
+
+      if (!res.ok) throw new Error("Failed");
+
+      showToast("All history cleared", "success");
+      loadHistory();
+
+    } catch (err) {
+      showToast("Failed to clear history", "error");
+    }
+  });
+});
 
 // ── UI utilities ──────────────────────────────────────────────────────────────
 function showLoading(msg) {
