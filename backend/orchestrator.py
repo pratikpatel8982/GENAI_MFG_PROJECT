@@ -60,8 +60,36 @@ class ManufacturingOrchestrator:
 
     def generate_image_url(self, prompt: str) -> str:
         enhanced = _IMAGE_PREFIX + prompt
-        encoded  = requests.utils.quote(enhanced)
-        return f"{POLLINATIONS_BASE}{encoded}?width=800&height=600&seed=42&model=flux"
+        encoded = requests.utils.quote(enhanced)
+
+        url = f"{POLLINATIONS_BASE}{encoded}"
+        params = {
+            "width": 800,
+            "height": 600,
+            "seed": 42,
+            "model": "flux",
+        }
+
+        headers = {
+            "User-Agent": "Mozilla/5.0 (compatible; ImageTest/1.0)",
+            "Accept": "image/png,image/jpeg,*/*",
+        }
+
+        try:
+            resp = requests.get(url, params=params, headers=headers, timeout=20)
+
+            if resp.status_code == 200:
+                # return final resolved URL (important)
+                return resp.url
+
+            print(f"[Pollinations] Failed: {resp.status_code} - {resp.text}")
+
+        except requests.RequestException as e:
+            print(f"[Pollinations] Exception: {e}")
+
+        # fallback (no seed, simpler)
+        fallback_url = f"{POLLINATIONS_BASE}{encoded}?width=800&height=600"
+        return fallback_url
 
     # ── Supabase ─────────────────────────────────────────────────────────────
 
