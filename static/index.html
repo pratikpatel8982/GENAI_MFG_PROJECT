@@ -3,116 +3,248 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Multimodal Manufacturing Creator | GAI-32</title>
+  <title>Multimodal Manufacturing Agent | GAI-32</title>
+  <meta name="description" content="Agentic AI for industrial concept visualization — multimodal generation powered by Llama 3 and Pollinations." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="/css/style.css" />
 
   <!-- Firebase compat SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <!-- Firebase config + auth helpers (must load before app.js) -->
   <script src="/js/firebase-config.js"></script>
 </head>
 <body>
 
+<!-- Ambient background glows -->
+<div class="bg-aurora" aria-hidden="true">
+  <div class="orb orb-cyan"></div>
+  <div class="orb orb-violet"></div>
+  <div class="grid-overlay"></div>
+</div>
+
 <!-- ══ AUTH ══════════════════════════════════════════════════════════════════ -->
-<section id="auth-section">
-  <div class="auth-card">
-    <div class="auth-logo">
-      <span class="logo-icon">⚙️</span>
-      <h1>Manufacturing Creator</h1>
-      <p>Multimodal AI for Industrial Concept Visualization</p>
-      <div class="project-badge">GAI-32 · D7 · Group 09D7</div>
+<section id="auth-section" class="auth-screen">
+  <div class="auth-card glass">
+    <div class="auth-mark">
+      <div class="mark-ring">
+        <span class="mark-glyph">⚙</span>
+      </div>
+      <div class="mark-pulse"></div>
+    </div>
+    <h1 class="auth-title">
+      Manufacturing <span class="grad-text">Agent</span>
+    </h1>
+    <p class="auth-sub">An agentic multimodal AI for industrial concept design.</p>
+    <div class="auth-badge">
+      <span class="dot"></span> GAI-32 · D7 · Group 09D7
     </div>
 
     <button class="btn-google" id="btn-google">
-      <svg width="20" height="20" viewBox="0 0 24 24">
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
       </svg>
-      Sign in with Google
+      Continue with Google
     </button>
 
-    <p class="auth-note">By signing in you agree to use this tool for educational and professional purposes.</p>
+    <p class="auth-note">For educational and professional use only.</p>
   </div>
 </section>
 
 <!-- ══ APP ════════════════════════════════════════════════════════════════════ -->
 <div id="app-section" class="hidden">
 
-  <!-- Topbar -->
+  <!-- Slim top bar -->
   <header class="topbar">
-    <div class="topbar-brand">⚙️&nbsp; Manufacturing <span>Creator</span></div>
-    <div class="topbar-user">
-      <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User" alt="Avatar" />
-      <div class="user-info">
-        <div id="user-name">User</div>
-        <div id="user-email">user@email.com</div>
+    <div class="topbar-left">
+      <div class="brand">
+        <span class="brand-glyph">⚙</span>
+        <span class="brand-text">Manufacturing <strong>Agent</strong></span>
       </div>
-      <button class="btn-logout" id="btn-logout">Sign Out</button>
+      <div class="agent-status" id="agent-status" data-state="idle">
+        <span class="status-dot"></span>
+        <span class="status-label" id="status-label">Idle</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-ghost" id="btn-history" title="History (recent generations)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
+        <span>History</span>
+      </button>
+      <div class="user-chip">
+        <img id="user-avatar" src="https://api.dicebear.com/7.x/initials/svg?seed=User" alt="" />
+        <div class="user-meta">
+          <div id="user-name">User</div>
+          <div id="user-email" class="muted">user@email.com</div>
+        </div>
+      </div>
+      <button class="btn-ghost" id="btn-logout" title="Sign out">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
     </div>
   </header>
 
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-search">
-      <input type="text" id="search-input" placeholder="Search concepts…" />
-      <button id="search-btn">🔍</button>
-    </div>
-    <div class="sidebar-title" style="display:flex; justify-content:space-between; align-items:center;">
-      <span>Generation History</span>
-      <button id="btn-clear-history" class="btn-clear-history">Clear</button>
-    </div>
-    <div id="history-list">
-      <p class="empty-state">Loading history…</p>
-    </div>
-  </aside>
+  <!-- Hero canvas -->
+  <main class="canvas">
+    <div class="canvas-inner">
 
-  <!-- Main -->
-  <main class="main-content">
+      <div class="hero-eyebrow">
+        <span class="pulse-dot"></span>
+        Multimodal · Agentic · Manufacturing
+      </div>
 
-    <div class="generator-card">
-      <h2>Generate Manufacturing Concept</h2>
-      <p class="subtitle">Describe a product or idea — get a detailed technical write-up and a high-fidelity prototype visualization.</p>
+      <h1 class="hero-title">
+        Describe a <span class="grad-text">concept</span>.<br/>
+        Let the agent engineer it.
+      </h1>
+      <p class="hero-sub">
+        The agent decides whether to generate a technical write-up, a prototype visualization, or both — based on your prompt.
+      </p>
 
-      <div class="prompt-area">
-        <textarea id="prompt-input" placeholder="e.g. Automated robotic arm for precision welding in an automotive assembly line…" rows="3"></textarea>
+      <div class="prompt-shell glass">
+        <textarea
+          id="prompt-input"
+          rows="3"
+          placeholder="e.g. Automated robotic welding arm for an automotive chassis assembly line…"
+          maxlength="1200"></textarea>
+        <div class="prompt-foot">
+          <div class="prompt-hint">
+            <kbd>⌘</kbd><span>+</span><kbd>Enter</kbd>
+            <span class="muted">to generate</span>
+          </div>
+          <div class="char-count"><span id="char-count">0</span> / 1200</div>
+        </div>
       </div>
 
       <div class="example-chips" id="example-prompts"></div>
 
-      <div class="action-buttons">
-        <button class="btn-action" id="btn-text"       onclick="generate('text')">📝 Generate Description</button>
-        <button class="btn-action" id="btn-image"      onclick="generate('image')">🖼️ Generate Image</button>
-        <button class="btn-action" id="btn-multimodal" onclick="generate('multimodal')">✨ Generate Both</button>
+      <div class="cta-row">
+        <button class="btn-generate" id="btn-generate">
+          <span class="btn-shine"></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Generate</span>
+        </button>
       </div>
 
-      <div id="generating-bar" class="generating-bar hidden" style="margin-top:18px">
-        <div class="spinner"></div>
-        <span id="generating-msg">Generating…</span>
-        <div class="progress-bar-track"><div class="progress-bar-fill"></div></div>
-      </div>
-    </div>
+      <!-- Agent reasoning panel -->
+      <section id="agent-panel" class="agent-panel hidden" aria-live="polite">
+        <div class="agent-panel-head">
+          <div class="agent-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v1a4 4 0 0 0-4 4v1a3 3 0 0 0-2 2.83V16a3 3 0 0 0 3 3 3 3 0 0 0 3 3h6a3 3 0 0 0 3-3 3 3 0 0 0 3-3v-2.17A3 3 0 0 0 19 11v-1a4 4 0 0 0-4-4V5a3 3 0 0 0-3-3z"/></svg>
+          </div>
+          <div class="agent-panel-title">
+            <strong>Agent</strong>
+            <span class="muted" id="agent-elapsed">0.0s</span>
+          </div>
+          <button class="agent-close hidden" id="agent-close" aria-label="Close">×</button>
+        </div>
 
-    <div id="results-section" class="hidden">
-      <div id="text-result"  class="result-block hidden"></div>
-      <div id="image-result" class="result-block hidden"></div>
-    </div>
+        <ol class="agent-steps" id="agent-steps">
+          <li class="agent-step" data-step="plan">
+            <div class="step-bullet"><span class="bullet-dot"></span></div>
+            <div class="step-body">
+              <div class="step-title">🧠 Planning</div>
+              <div class="step-detail" id="plan-detail">Deciding which tools to use…</div>
+              <div class="step-tools hidden" id="plan-tools"></div>
+            </div>
+          </li>
+          <li class="agent-step" data-step="exec">
+            <div class="step-bullet"><span class="bullet-dot"></span></div>
+            <div class="step-body">
+              <div class="step-title">🛠 Executing</div>
+              <div class="exec-rows" id="exec-rows"></div>
+            </div>
+          </li>
+          <li class="agent-step" data-step="done">
+            <div class="step-bullet"><span class="bullet-dot"></span></div>
+            <div class="step-body">
+              <div class="step-title">✅ Complete</div>
+              <div class="step-detail" id="done-detail">Awaiting…</div>
+            </div>
+          </li>
+        </ol>
 
+        <div id="agent-error" class="agent-error hidden">
+          <div class="err-msg" id="agent-error-msg"></div>
+          <button class="btn-retry" id="btn-retry">Retry</button>
+        </div>
+      </section>
+
+      <!-- Results -->
+      <section id="results-section" class="results hidden">
+        <div id="text-result" class="result-card glass hidden">
+          <div class="result-head">
+            <div class="result-title">
+              <span class="result-icon text-icon">📋</span>
+              <h3>Concept Description</h3>
+            </div>
+            <button class="btn-soft" id="btn-copy-text">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span>Copy</span>
+            </button>
+          </div>
+          <div class="prompt-badge" id="text-prompt-badge"></div>
+          <div class="text-body" id="text-content"></div>
+        </div>
+
+        <div id="image-result" class="result-card glass hidden">
+          <div class="result-head">
+            <div class="result-title">
+              <span class="result-icon image-icon">🖼</span>
+              <h3>Prototype Visualization</h3>
+            </div>
+            <a class="btn-soft" id="download-image" download="prototype.png" target="_blank" rel="noopener">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Download</span>
+            </a>
+          </div>
+          <div class="prompt-badge" id="image-prompt-badge"></div>
+          <div class="image-frame">
+            <div class="image-skeleton" id="image-skeleton"></div>
+            <img id="result-image" alt="Generated prototype visualization" />
+          </div>
+        </div>
+      </section>
+
+    </div>
   </main>
 </div>
 
-<!-- Loading overlay -->
-<div id="loading-overlay" class="hidden">
-  <div class="loading-card">
-    <div class="loading-spinner-lg"></div>
+<!-- ══ HISTORY DRAWER ═══════════════════════════════════════════════════════ -->
+<div id="drawer-backdrop" class="drawer-backdrop hidden"></div>
+<aside id="history-drawer" class="drawer hidden" aria-hidden="true">
+  <div class="drawer-head">
+    <h3>History</h3>
+    <button class="drawer-close" id="drawer-close" aria-label="Close drawer">×</button>
+  </div>
+  <div class="drawer-search">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search-input" placeholder="Search concepts…" />
+  </div>
+  <div class="drawer-list" id="history-list">
+    <p class="empty-state">Loading…</p>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn-danger" id="btn-clear-history">Clear all history</button>
+  </div>
+</aside>
+
+<!-- Loading overlay (sign-in only) -->
+<div id="loading-overlay" class="loading-overlay hidden">
+  <div class="loading-card glass">
+    <div class="loading-spinner"></div>
     <span id="loading-msg">Processing…</span>
   </div>
 </div>
 
 <!-- Toast -->
-<div id="toast" class="toast"></div>
+<div id="toast-stack" class="toast-stack"></div>
 
 <script src="/js/app.js"></script>
 </body>
