@@ -46,34 +46,33 @@ document.getElementById("btn-logout").addEventListener("click", async () => {
 });
 
 // ── Generation ────────────────────────────────────────────────────────────────
-async function generate(mode) {
+async function generate() {
   const prompt = document.getElementById("prompt-input").value.trim();
-  if (!prompt) return showToast("Please enter a manufacturing concept prompt", "warning");
-
-  try {
-    showGenerating(mode);
-    clearResults();
-
-    if (mode === "text") {
-      const data = await apiPost("/generate/text", { prompt });
-      renderTextResult(data.text, data.prompt);
-    } else if (mode === "image") {
-      const data = await apiPost("/generate/image", { prompt });
-      renderImageResult(data.image_url, data.prompt);
-    } else {
-      const data = await apiPost("/generate/multimodal", { prompt });
-      renderTextResult(data.text, data.prompt);
-      renderImageResult(data.image_url, data.prompt);
-    }
-
-    document.getElementById("results-section").classList.remove("hidden");
-    document.getElementById("results-section").scrollIntoView({ behavior: "smooth" });
-    loadHistory();
-  } catch (err) {
-    showToast("Generation failed: " + err.message, "error");
-  } finally {
-    hideGenerating();
+  if (!prompt) {
+    showToast("Enter a prompt first", "warning");
+    return;
   }
+
+  // UI state
+  toggleGenerating(true);
+  hideResults();
+  try {
+    const token = await getIdToken();
+    const res = await fetch("/api/generate/multimodal", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed");
+    renderResults(data);
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+  toggleGenerating(false);
 }
 
 // ── Search ────────────────────────────────────────────────────────────────────
@@ -354,4 +353,52 @@ document.getElementById("example-prompts").innerHTML = examples
 function useExample(text) {
   document.getElementById("prompt-input").value = text;
   document.getElementById("prompt-input").focus();
+}
+
+function renderResults(data) {
+  const resultsSection = document.getElementById("results-section");
+  const textBlock = document.getElementById("text-result");
+  const imageBlock = document.getElementById("image-result");
+
+  const textContent = document.getElementById("text-content");
+  const imageEl = document.getElementById("result-image");
+  const downloadBtn = document.getElementById("download-image");
+
+  resultsSection.classList.remove("hidden");
+
+  // TEXT
+  if (data.text) {
+    textContent.innerText = data.text;
+    textBlock.classList.remove("hidden");
+  } else {
+    textBlock.classList.add("hidden");
+  }
+
+  // IMAGE
+  if (data.image_url) {
+    imageEl.src = data.image_url;
+    downloadBtn.href = data.image_url;
+
+    imageEl.onload = () => imageEl.classList.add("loaded");
+
+    imageBlock.classList.remove("hidden");
+  } else {
+    imageBlock.classList.add("hidden");
+  }
+  resultsSection.scrollIntoView({ behavior: "smooth" });
+}
+
+function hideResults() {
+  document.getElementById("results-section").classList.add("hidden");
+}
+
+function toggleGenerating(state) {
+  document.getElementById("generating-bar").classList.toggle("hidden", !state);
+  document.getElementById("btn-generate").disabled = state;
+}
+
+function copyText() {
+  const text = document.getElementById("text-content").innerText;
+  navigator.clipboard.writeText(text);
+  showToast("Copied!", "success");
 }

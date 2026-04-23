@@ -693,3 +693,13 @@ body {
   border-color: var(--error);
   color: var(--error);
 }
+
+#btn-generate {
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+  color: #000;
+  font-weight: 700;
+}
+
+#btn-generate:hover {
+  transform: translateY(-2px);
+}

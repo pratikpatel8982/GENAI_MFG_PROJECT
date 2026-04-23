@@ -83,9 +83,9 @@
       <div class="example-chips" id="example-prompts"></div>
 
       <div class="action-buttons">
-        <button class="btn-action" id="btn-text"       onclick="generate('text')">📝 Generate Description</button>
-        <button class="btn-action" id="btn-image"      onclick="generate('image')">🖼️ Generate Image</button>
-        <button class="btn-action" id="btn-multimodal" onclick="generate('multimodal')">✨ Generate Both</button>
+        <button class="btn-action" id="btn-generate" onclick="generate()">
+          ⚡ Generate
+        </button>
       </div>
 
       <div id="generating-bar" class="generating-bar hidden" style="margin-top:18px">
@@ -96,8 +96,25 @@
     </div>
 
     <div id="results-section" class="hidden">
-      <div id="text-result"  class="result-block hidden"></div>
-      <div id="image-result" class="result-block hidden"></div>
+      <!-- TEXT -->
+      <div id="text-result" class="result-block hidden">
+        <div class="result-header">
+          <h3>📝 Description</h3>
+          <button class="btn-copy" onclick="copyText()">Copy</button>
+        </div>
+        <div id="text-content" class="result-text"></div>
+      </div>
+      <!-- IMAGE -->
+      <div id="image-result" class="result-block hidden">
+        <div class="result-header">
+          <h3>🖼️ Visualization</h3>
+          <a id="download-image" class="btn-download" target="_blank">Download</a>
+        </div>
+        <div class="image-container">
+          <img id="result-image" />
+          <div class="image-loading-overlay">Loading image...</div>
+        </div>
+      </div>
     </div>
 
   </main>
