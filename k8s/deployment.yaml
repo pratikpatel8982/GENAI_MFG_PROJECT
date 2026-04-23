@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manufacturing-agent-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: manufacturing-agent
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: manufacturing-agent
+    spec:
+      containers:
+        - name: manufacturing-agent
+          image: pratikpatel8982/manufacturing-agent:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: manufacturing-agent-config
+            - secretRef:
+                name: manufacturing-agent-secrets
