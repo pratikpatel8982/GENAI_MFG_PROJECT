@@ -1,0 +1,33 @@
+name: Build & Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout code
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2️⃣ Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 3️⃣ Build image
+      - name: Build Docker Image
+        run: |
+          docker build -t pratikpatel8982/manufacturing-agent:${{ github.sha }} .
+
+      # 4️⃣ Push image
+      - name: Push Docker Image
+        run: |
+          docker tag pratikpatel8982/manufacturing-agent:${{ github.sha }} pratikpatel8982/manufacturing-agent:latest
+          docker push pratikpatel8982/manufacturing-agent:${{ github.sha }}
