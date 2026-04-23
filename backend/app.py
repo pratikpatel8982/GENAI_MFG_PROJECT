@@ -64,48 +64,33 @@ def create_app() -> Flask:
     def health():
         return jsonify({"status": "ok", "message": "Multimodal Manufacturing Creator running"})
 
-    # ── Text Generation ───────────────────────────────────────────────────────
-
-    @app.route("/api/generate/text", methods=["POST"])
-    @auth_required
-    def generate_text():
-        data   = request.get_json(silent=True) or {}
-        prompt = (data.get("prompt") or "").strip()
-        if not prompt:
-            return jsonify({"error": "prompt is required"}), 400
-
-        text = orchestrator.generate_text(prompt)
-        orchestrator.save_concept(request.uid, prompt, description=text)
-        return jsonify({"text": text, "prompt": prompt})
-
-    # ── Image Generation ──────────────────────────────────────────────────────
-
-    @app.route("/api/generate/image", methods=["POST"])
-    @auth_required
-    def generate_image():
-        data   = request.get_json(silent=True) or {}
-        prompt = (data.get("prompt") or "").strip()
-        if not prompt:
-            return jsonify({"error": "prompt is required"}), 400
-
-        image_url = orchestrator.generate_image_url(prompt)
-        orchestrator.save_concept(request.uid, prompt, image_url=image_url)
-        return jsonify({"image_url": image_url, "prompt": prompt})
-
     # ── Multimodal ────────────────────────────────────────────────────────────
 
     @app.route("/api/generate/multimodal", methods=["POST"])
     @auth_required
-    def generate_multimodal():
+    def generate_agent():
         data   = request.get_json(silent=True) or {}
         prompt = (data.get("prompt") or "").strip()
+
         if not prompt:
             return jsonify({"error": "prompt is required"}), 400
 
-        text      = orchestrator.generate_text(prompt)
-        image_url = orchestrator.generate_image_url(prompt)
-        orchestrator.save_concept(request.uid, prompt, description=text, image_url=image_url)
-        return jsonify({"text": text, "image_url": image_url, "prompt": prompt})
+        # 🧠 AGENT CALL
+        result = orchestrator.run_agent(prompt)
+
+        # 💾 Save result (handles None automatically)
+        orchestrator.save_concept(
+            request.uid,
+            prompt,
+            description=result.get("text"),
+            image_url=result.get("image_url"),
+        )
+
+        return jsonify({
+            "text": result.get("text"),
+            "image_url": result.get("image_url"),
+            "prompt": prompt
+        })
 
     # ── History ───────────────────────────────────────────────────────────────
 
